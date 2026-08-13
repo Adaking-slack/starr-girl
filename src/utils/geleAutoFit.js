@@ -37,11 +37,19 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+// Never let the auto-fit gele start out wider than this fraction of the
+// photo — on a tight portrait crop (face filling much of a narrow frame),
+// pure head-geometry sizing can produce a gele nearly as wide as the photo
+// itself, leaving no margin to grab its resize/rotate handles.
+const MAX_WIDTH_TO_PHOTO_RATIO = 0.85;
+
 // landmarks: 68-point array from face-api.js (iBUG 300W layout), in the
 // photo's natural pixel space. geleNaturalSize: { width, height } of the
-// gele artwork's own source image. Returns a transform in the same
-// {x, y, width, height, scaleX, scaleY, rotation} shape used elsewhere.
-export function computeGeleTransformFromFace(landmarks, geleNaturalSize) {
+// gele artwork's own source image. photoSize: { width, height } of the
+// uploaded photo, used only to cap the gele from starting out edge-to-edge.
+// Returns a transform in the same {x, y, width, height, scaleX, scaleY,
+// rotation} shape used elsewhere.
+export function computeGeleTransformFromFace(landmarks, geleNaturalSize, photoSize) {
   const rightEye = avg(landmarks.slice(36, 42));
   const leftEye = avg(landmarks.slice(42, 48));
   const browCenter = avg(landmarks.slice(17, 27));
@@ -64,7 +72,10 @@ export function computeGeleTransformFromFace(landmarks, geleNaturalSize) {
   };
 
   const headWidth = dist(jawLeft, jawRight) * HEAD_WIDTH_FUDGE;
-  const width = headWidth * GELE_WIDTH_TO_HEAD_RATIO;
+  const rawWidth = headWidth * GELE_WIDTH_TO_HEAD_RATIO;
+  const width = photoSize
+    ? Math.min(rawWidth, photoSize.width * MAX_WIDTH_TO_PHOTO_RATIO)
+    : rawWidth;
   const height = width * (geleNaturalSize.height / geleNaturalSize.width);
 
   // Where the anchor sits relative to the gele's own center, before rotation.

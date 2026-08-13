@@ -92,7 +92,7 @@
   gap: 12px;
   width: 100%;
   min-width: 280px;
-  margin-top: auto;
+  margin-top: 8px;
 }
 
 .share-actions .btn-reset,
@@ -107,9 +107,5 @@
 
   .share-title {
     font-size: 30px;
-  }
-
-  .share-actions {
-    margin-top: 8px;
   }
 }

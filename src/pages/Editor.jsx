@@ -10,6 +10,14 @@ import dvdSrc from "../assets/DVD.svg";
 import { CARD_RADIUS, roundedRectPath } from "../utils/cardGeometry.js";
 import "./Editor.css";
 
+// Breathing room around the photo card so the gele's resize/rotate handles
+// always have somewhere to render — without this, a gele sized close to the
+// photo's own width (common on tight mobile portrait crops) pushes its
+// handles right to (or past) the photo's edge, where they'd otherwise be
+// clipped away along with the photo. The margin blends into the page: the
+// Stage has no background of its own and .editor-page is solid white.
+const STAGE_MARGIN_RATIO = 0.12;
+
 export default function Editor() {
   const { photo, gele, setGele, resetComposition } = useApp();
   const navigate = useNavigate();
@@ -29,11 +37,16 @@ export default function Editor() {
   // transformed. The gele is a fully independent overlay with its own
   // (x, y, scale, rotation) — dragging/resizing/rotating it only ever
   // updates that one object's transform, never the photo's.
+  const marginX = photo.width * STAGE_MARGIN_RATIO;
+  const marginY = photo.height * STAGE_MARGIN_RATIO;
+  const contentWidth = photo.width + marginX * 2;
+  const contentHeight = photo.height + marginY * 2;
+
   const maxStageWidth = Math.min(vw - 64, 720);
   const maxStageHeight = Math.min(vh * 0.6, 760);
-  const scale = Math.min(maxStageWidth / photo.width, maxStageHeight / photo.height, 1);
-  const stageWidth = photo.width * scale;
-  const stageHeight = photo.height * scale;
+  const scale = Math.min(maxStageWidth / contentWidth, maxStageHeight / contentHeight, 1);
+  const stageWidth = contentWidth * scale;
+  const stageHeight = contentHeight * scale;
 
   const deselectAll = (e) => {
     if (e.target === e.target.getStage()) setSelected(false);
@@ -59,23 +72,28 @@ export default function Editor() {
             className="editor-stage"
           >
             <Layer>
-              <Rect
-                width={photo.width}
-                height={photo.height}
-                cornerRadius={CARD_RADIUS}
-                fill="#fff"
-                shadowColor="rgba(15,15,18,0.4)"
-                shadowBlur={44}
-                shadowOffsetY={20}
-                shadowOpacity={1}
-              />
-              <Group clipFunc={(ctx) => roundedRectPath(ctx, photo.width, photo.height, CARD_RADIUS)}>
+              <Group x={marginX} y={marginY}>
+                <Rect
+                  width={photo.width}
+                  height={photo.height}
+                  cornerRadius={CARD_RADIUS}
+                  fill="#fff"
+                  shadowColor="rgba(15,15,18,0.4)"
+                  shadowBlur={44}
+                  shadowOffsetY={20}
+                  shadowOpacity={1}
+                />
                 {/* Layer 1 — the user's photo. Fixed: no x/y/rotation/scale
-                    props, ever. */}
-                <KonvaImage image={photoImg} width={photo.width} height={photo.height} />
+                    props, ever. Clipped to the card's rounded corners —
+                    this clip applies to the photo's pixels only. */}
+                <Group clipFunc={(ctx) => roundedRectPath(ctx, photo.width, photo.height, CARD_RADIUS)}>
+                  <KonvaImage image={photoImg} width={photo.width} height={photo.height} />
+                </Group>
                 {/* Layer 2 — the gele. Independent overlay; only its own
                     transform object changes when the user drags/resizes/
-                    rotates it. */}
+                    rotates it. Deliberately outside the clip above, so its
+                    resize handles and rotate ring stay reachable even when
+                    they extend past the photo's edge into the margin. */}
                 <EditableImage
                   image={geleImg}
                   transform={gele}

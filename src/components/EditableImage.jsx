@@ -1,8 +1,37 @@
 import { useEffect, useRef } from "react";
-import { Image as KonvaImage, Transformer, Ring } from "react-konva";
+import { Image as KonvaImage, Transformer, Shape } from "react-konva";
 
 function angleDeg(cx, cy, px, py) {
   return (Math.atan2(py - cy, px - cx) * 180) / Math.PI;
+}
+
+// How far outward from the box's own edge the rotate handle extends. The
+// handle's inner edge sits flush against the box (no gap), so holding and
+// turning the visible boundary box itself is what rotates it — the padding
+// is just extra touch-target margin beyond that edge, generous enough for a
+// finger on mobile.
+const ROTATE_HANDLE_THICKNESS = 32;
+
+// Draws a rectangular "frame" (a rect with a rect-shaped hole in it) into a
+// Konva Shape's context: an outer rect and an inner rect wound in opposite
+// directions so the fill only covers the band between them, leaving the
+// interior (over the image) untouched by hit-testing.
+function drawFrame(ctx, innerW, innerH, thickness) {
+  const ow = innerW / 2 + thickness;
+  const oh = innerH / 2 + thickness;
+  const iw = innerW / 2;
+  const ih = innerH / 2;
+  ctx.beginPath();
+  ctx.moveTo(-ow, -oh);
+  ctx.lineTo(ow, -oh);
+  ctx.lineTo(ow, oh);
+  ctx.lineTo(-ow, oh);
+  ctx.closePath();
+  ctx.moveTo(-iw, -ih);
+  ctx.lineTo(-iw, ih);
+  ctx.lineTo(iw, ih);
+  ctx.lineTo(iw, -ih);
+  ctx.closePath();
 }
 
 // A single draggable / resizable / rotatable image layer (used for the gele).
@@ -10,11 +39,13 @@ function angleDeg(cx, cy, px, py) {
 // still loading) — loaded by the caller via useImage so it's fetched once
 // and the caller can show its own loading state alongside it.
 //
-// Rotation is a custom full-ring handle (drag anywhere in a circle around
-// the shape), not Konva Transformer's default single small handle-on-a-line
-// — that one tiny hit target was hard to grab precisely and only worked
-// from that one spot. The ring lets you start rotating from any angle
-// around the shape, wherever's convenient.
+// Rotation is a custom handle shaped as a frame flush against the box's own
+// boundary (see drawFrame above), not Konva Transformer's default single
+// small handle-on-a-line — that one tiny hit target was hard to grab
+// precisely and only worked from that one spot. The frame lets you rotate
+// by holding and turning the boundary box itself, from any edge or corner
+// that isn't already a resize anchor — important on mobile, where a thin
+// ring far from the box is easy to miss entirely.
 export default function EditableImage({ image, transform, onChange, isSelected, onSelect, name }) {
   const shapeRef = useRef(null);
   const trRef = useRef(null);
@@ -34,8 +65,6 @@ export default function EditableImage({ image, transform, onChange, isSelected, 
 
   const displayW = transform.width * transform.scaleX;
   const displayH = transform.height * transform.scaleY;
-  const ringInner = Math.hypot(displayW, displayH) / 2 + 10;
-  const ringOuter = ringInner + 34;
 
   return (
     <>
@@ -73,11 +102,14 @@ export default function EditableImage({ image, transform, onChange, isSelected, 
 
       {isSelected && (
         <>
-          <Ring
+          <Shape
             x={transform.x}
             y={transform.y}
-            innerRadius={ringInner}
-            outerRadius={ringOuter}
+            rotation={transform.rotation}
+            sceneFunc={(ctx, shapeNode) => {
+              drawFrame(ctx, displayW, displayH, ROTATE_HANDLE_THICKNESS);
+              ctx.fillStrokeShape(shapeNode);
+            }}
             fill="rgba(123, 47, 247, 0.06)"
             stroke="rgba(123, 47, 247, 0.35)"
             strokeWidth={1}

@@ -58,7 +58,7 @@ export function AppProvider({ children }) {
       if (!landmarks) return;
 
       const geleSize = await loadImageNaturalSize(geleSrc);
-      setGele(computeGeleTransformFromFace(landmarks, geleSize));
+      setGele(computeGeleTransformFromFace(landmarks, geleSize, { width: imgWidth, height: imgHeight }));
     } catch (err) {
       console.warn("Auto-fit failed, keeping default gele placement.", err);
     }

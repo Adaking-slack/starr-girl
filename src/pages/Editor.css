@@ -106,7 +106,7 @@
   gap: 12px;
   width: 100%;
   min-width: 280px;
-  margin-top: auto;
+  margin-top: 8px;
 }
 
 .editor-actions .btn-reset,
@@ -121,12 +121,5 @@
 
   .editor-title {
     font-size: 30px;
-  }
-
-  /* Sit naturally under the canvas instead of pinning to the viewport
-     bottom — the mobile "footer button" pattern looks stranded once the
-     page is taller than its content. */
-  .editor-actions {
-    margin-top: 8px;
   }
 }
