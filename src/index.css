@@ -1,0 +1,137 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0F0620;
+  --bg-elevated: #1B0B33;
+  --purple: #9B4DFF;
+  --purple-deep: #7B2FF7;
+  --purple-dark: #3F0F8A;
+  --lilac: #E8D4FF;
+  --text: #FFFFFF;
+  --text-dim: rgba(255, 255, 255, 0.65);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+
+  /* Type system */
+  --font-heading: "Comic Neue", "Comic Sans MS", cursive;
+  --font-body: "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --subheading-size: 15px;
+  --subheading-color: #665E66;
+
+  font-family: var(--font-body);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% -10%, #2A1147 0%, #0F0620 55%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2 {
+  font-family: var(--font-heading);
+  margin: 0;
+}
+
+.subheading {
+  font-family: var(--font-body);
+  font-size: var(--subheading-size);
+  color: var(--subheading-color);
+  font-weight: 700;
+  margin: 0;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--purple) 0%, var(--purple-deep) 100%);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(123, 47, 247, 0.45);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Light-theme pill buttons (Editor + Share pages) */
+.btn-reset,
+.btn-view {
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-reset:active,
+.btn-view:active {
+  transform: scale(0.97);
+}
+
+.btn-reset {
+  background: #FBE7FA;
+  color: #5C1259;
+}
+
+.btn-view {
+  background: #4A0E4A;
+  color: #ffffff;
+  box-shadow: 0 3px 0 0 #E455D6;
+}

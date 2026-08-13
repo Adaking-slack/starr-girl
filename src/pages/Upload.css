@@ -1,0 +1,221 @@
+/*
+ * Type system: headings use Comic Neue (var(--font-heading)), body/UI text
+ * uses Nunito (var(--font-body)) — both loaded via Google Fonts in
+ * index.html. The "My Ayra starr" wordmark still uses a placeholder script
+ * stand-in since no script font has been specified yet.
+ *
+ * Layout: mobile-first base styles below, wider centered hero sizing kicks
+ * in at 860px+.
+ */
+
+.upload-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 24px 48px;
+  gap: 28px;
+  background: #ffffff;
+  color: #0F0F12;
+  min-height: 100vh;
+}
+
+.upload-hero {
+  position: relative;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+}
+
+/* The gele is anchored to the "GELE" word itself (not the hero block), sized
+   and positioned in em units so it scales with the heading's font-size and
+   stays pinned tight against the E at every breakpoint — matching the
+   reference exactly instead of floating independently. */
+.gele-word {
+  position: relative;
+  display: inline-block;
+}
+
+.upload-hero-gele {
+  /* Rotation is already baked into the source SVG export — no extra
+     transform needed here. */
+  position: absolute;
+  top: -0.70em;
+  right: -0.70em;
+  width: 1.5em;
+  height: auto;
+  filter: drop-shadow(0 6px 14px rgba(208, 184, 247, 0.35));
+  pointer-events: none;
+}
+
+.upload-eyebrow {
+  font-family: "Segoe Script", "Bradley Hand", "Comic Sans MS", cursive;
+  font-size: 15px;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin: 0 0 6px;
+}
+
+.upload-title {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0 0 18px;
+  color: #0F0F12;
+}
+
+.upload-title .accent {
+  color: var(--purple-deep);
+}
+
+.upload-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--subheading-size);
+  color: var(--subheading-color);
+  font-weight: 700;
+  line-height: 1.6;
+  margin: 0 auto;
+  max-width: 320px;
+}
+
+.upload-dropzone {
+  width: 100%;
+  max-width: 360px;
+  border: 2px dashed #b8b8bc;
+  border-radius: 20px;
+  background: #F6F6F7;
+  padding: 44px 20px;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  cursor: pointer;
+}
+
+.upload-dropzone.dragging,
+.upload-dropzone:hover {
+  border-color: var(--purple-deep);
+  background: #F0EBFA;
+}
+
+.upload-icon {
+  width: 48px;
+  height: auto;
+  margin: 0 auto 14px;
+}
+
+.upload-cta {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #0F0F12;
+  margin: 0 0 8px;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: #8A8A90;
+  margin: 0;
+  max-width: 260px;
+  margin-inline: auto;
+}
+
+.upload-error {
+  text-align: center;
+  color: #D6335A;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ---------- Tablet ---------- */
+@media (min-width: 640px) {
+  .upload-page {
+    gap: 36px;
+    padding: 56px 32px 64px;
+  }
+
+  .upload-hero {
+    max-width: 460px;
+  }
+
+  .upload-eyebrow {
+    font-size: 17px;
+  }
+
+  .upload-title {
+    font-size: 46px;
+  }
+
+  .upload-subtitle {
+    max-width: 380px;
+  }
+
+  .upload-dropzone {
+    max-width: 460px;
+    padding: 56px 28px;
+  }
+}
+
+/* ---------- Desktop: wide centered hero ---------- */
+@media (min-width: 860px) {
+  .upload-page {
+    padding: 96px 40px 96px;
+    gap: 44px;
+  }
+
+  .upload-hero {
+    max-width: 620px;
+  }
+
+  .upload-eyebrow {
+    font-size: 19px;
+  }
+
+  .upload-title {
+    font-size: 56px;
+    letter-spacing: 0.5px;
+    margin-bottom: 24px;
+  }
+
+  .upload-subtitle {
+    max-width: 460px;
+  }
+
+  .upload-dropzone {
+    max-width: 560px;
+    padding: 64px 32px;
+    border-radius: 24px;
+  }
+
+  .upload-icon {
+    width: 58px;
+    height: auto;
+  }
+
+  .upload-cta {
+    font-size: 16px;
+  }
+
+  .upload-hint {
+    font-size: 13px;
+    max-width: 320px;
+  }
+}
+
+/* ---------- Large desktop ---------- */
+@media (min-width: 1200px) {
+  .upload-hero {
+    max-width: 680px;
+  }
+
+  .upload-title {
+    font-size: 64px;
+  }
+
+  .upload-dropzone {
+    max-width: 620px;
+  }
+}

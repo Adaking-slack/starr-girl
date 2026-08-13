@@ -1,0 +1,75 @@
+/*
+ * Light theme matching the reference: white page, dark heading, a plain
+ * "step" label, a tilted photo card (with DVD badge drawn behind it inside
+ * the canvas, so it's included in the exported share image), and the same
+ * soft pill buttons as the Editor page.
+ */
+
+.share-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px 40px;
+  gap: 24px;
+  background: #ffffff;
+  color: #0F0F12;
+  min-height: 100vh;
+}
+
+@media (min-width: 860px) {
+  .share-page {
+    padding: 56px 40px 64px;
+    gap: 32px;
+  }
+}
+
+.share-header {
+  text-align: center;
+}
+
+.share-eyebrow {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: #8A8A90;
+  margin: 0 0 8px;
+}
+
+.share-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  color: #0F0F12;
+}
+
+.share-card-wrap {
+  line-height: 0;
+}
+
+.share-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  min-width: 280px;
+  margin-top: auto;
+}
+
+.share-actions .btn-reset,
+.share-actions .btn-view {
+  flex: 1;
+}
+
+@media (min-width: 860px) {
+  .share-eyebrow {
+    font-size: 16px;
+  }
+
+  .share-title {
+    font-size: 30px;
+  }
+
+  .share-actions {
+    margin-top: 8px;
+  }
+}
