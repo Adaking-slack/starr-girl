@@ -21,6 +21,16 @@ function loadModels() {
   return loadPromise;
 }
 
+// Kicks off the model fetch without waiting on it — call this as early as
+// possible (e.g. while the user is still on the upload screen) so the
+// models are already warm in memory by the time a photo is picked and
+// detectFaceLandmarks actually needs them. Safe to call repeatedly.
+export function preloadFaceModels() {
+  loadModels().catch(() => {
+    // Ignore — detectFaceLandmarks will retry and fall back gracefully.
+  });
+}
+
 // Returns the 68-point landmark set (in the image's natural pixel space) for
 // the most prominent face in the image, or null if detection isn't possible
 // (models fail to load, no face found, etc). Never throws — callers should

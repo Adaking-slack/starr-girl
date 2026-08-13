@@ -7,7 +7,7 @@
 
 // Fraction across (x) / down (y) the gele artwork's own bounding box where
 // the wearer's forehead should land — calibrated by eye against the actual
-// transparent gele asset (src/assets/gele-placeholder.svg): the fabric's
+// transparent gele asset (src/assets/gele-placeholder.webp): the fabric's
 // inner opening sits a bit above center, roughly two-thirds of the way down.
 export const GELE_ANCHOR = { x: 0.5, y: 0.68 };
 

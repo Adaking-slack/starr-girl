@@ -1,20 +1,21 @@
 import { useEffect, useRef } from "react";
 import { Image as KonvaImage, Transformer, Ring } from "react-konva";
-import useImage from "use-image";
 
 function angleDeg(cx, cy, px, py) {
   return (Math.atan2(py - cy, px - cx) * 180) / Math.PI;
 }
 
 // A single draggable / resizable / rotatable image layer (used for the gele).
+// `image` is an already-loaded HTMLImageElement (or undefined while it's
+// still loading) — loaded by the caller via useImage so it's fetched once
+// and the caller can show its own loading state alongside it.
 //
 // Rotation is a custom full-ring handle (drag anywhere in a circle around
 // the shape), not Konva Transformer's default single small handle-on-a-line
 // — that one tiny hit target was hard to grab precisely and only worked
 // from that one spot. The ring lets you start rotating from any angle
 // around the shape, wherever's convenient.
-export default function EditableImage({ src, transform, onChange, isSelected, onSelect, name }) {
-  const [img] = useImage(src);
+export default function EditableImage({ image, transform, onChange, isSelected, onSelect, name }) {
   const shapeRef = useRef(null);
   const trRef = useRef(null);
   const rotateStartRef = useRef(null);
@@ -40,7 +41,7 @@ export default function EditableImage({ src, transform, onChange, isSelected, on
     <>
       <KonvaImage
         ref={shapeRef}
-        image={img}
+        image={image}
         x={transform.x}
         y={transform.y}
         width={transform.width}

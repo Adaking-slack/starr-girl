@@ -33,6 +33,7 @@ export default function TopFiveSheet({ open, initialSelected, onClose, onConfirm
               {selected.length}/{REQUIRED_TOP_FIVE}
             </span>
           </p>
+          <p className="sheet-track-count">{tracklist.length} songs</p>
         </div>
 
         <div className="sheet-list">

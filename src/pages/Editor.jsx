@@ -5,7 +5,7 @@ import useImage from "use-image";
 import { useApp } from "../state/AppContext.jsx";
 import EditableImage from "../components/EditableImage.jsx";
 import useWindowSize from "../hooks/useWindowSize.js";
-import geleSrc from "../assets/gele-placeholder.svg";
+import geleSrc from "../assets/gele-placeholder.webp";
 import dvdSrc from "../assets/DVD.svg";
 import { CARD_RADIUS, roundedRectPath } from "../utils/cardGeometry.js";
 import "./Editor.css";
@@ -14,6 +14,7 @@ export default function Editor() {
   const { photo, gele, setGele, resetComposition } = useApp();
   const navigate = useNavigate();
   const [photoImg] = useImage(photo?.dataUrl);
+  const [geleImg, geleStatus] = useImage(geleSrc);
   const [selected, setSelected] = useState(true);
   const containerRef = useRef(null);
   const { width: vw, height: vh } = useWindowSize();
@@ -76,7 +77,7 @@ export default function Editor() {
                     transform object changes when the user drags/resizes/
                     rotates it. */}
                 <EditableImage
-                  src={geleSrc}
+                  image={geleImg}
                   transform={gele}
                   onChange={setGele}
                   isSelected={selected}
@@ -86,6 +87,12 @@ export default function Editor() {
               </Group>
             </Layer>
           </Stage>
+          {geleStatus === "loading" && (
+            <div className="editor-loading-overlay">
+              <span className="editor-loading-spinner" aria-hidden="true" />
+              Loading asset...
+            </div>
+          )}
         </div>
       </div>
 

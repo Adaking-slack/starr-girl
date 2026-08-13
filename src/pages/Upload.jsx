@@ -1,6 +1,7 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../state/AppContext.jsx";
+import { preloadFaceModels } from "../utils/faceDetect.js";
 import addIconSrc from "../assets/Star.svg";
 import "./Upload.css";
 
@@ -10,6 +11,13 @@ export default function Upload() {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState("");
+
+  // Warm the face-detection models while the user is still choosing a
+  // photo, so they're already loaded by the time resetComposition needs
+  // them on the Editor page — no visible delay.
+  useEffect(() => {
+    preloadFaceModels();
+  }, []);
 
   const handleFile = useCallback(
     (file) => {
@@ -51,7 +59,7 @@ export default function Upload() {
             GELE
             <img
               className="upload-hero-gele"
-              src="/Image/small gele.svg"
+              src="/Image/small-gele.webp"
               alt=""
               aria-hidden="true"
             />

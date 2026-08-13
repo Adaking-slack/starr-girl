@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback } from "react";
 import { detectFaceLandmarks } from "../utils/faceDetect.js";
 import { computeGeleTransformFromFace, loadImageNaturalSize } from "../utils/geleAutoFit.js";
 import { FRAME_WINDOW, coverFit } from "../utils/cardGeometry.js";
-import geleSrc from "../assets/gele-placeholder.svg";
+import geleSrc from "../assets/gele-placeholder.webp";
 
 const AppContext = createContext(null);
 

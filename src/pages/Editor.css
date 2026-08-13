@@ -71,6 +71,36 @@
   line-height: 0;
 }
 
+.editor-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: #8A8A90;
+  background: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.editor-loading-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #E4E4E8;
+  border-top-color: #7B2FF7;
+  animation: editor-spin 0.7s linear infinite;
+}
+
+@keyframes editor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .editor-actions {
   display: flex;
   gap: 12px;

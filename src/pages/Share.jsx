@@ -6,7 +6,7 @@ import { useApp } from "../state/AppContext.jsx";
 import TopFiveSheet from "../components/TopFiveSheet.jsx";
 import { tracklist } from "../data/tracklist.js";
 import useWindowSize from "../hooks/useWindowSize.js";
-import geleSrc from "../assets/gele-placeholder.svg";
+import geleSrc from "../assets/gele-placeholder.webp";
 import {
   FRAME_WIDTH,
   FRAME_HEIGHT,
@@ -26,7 +26,7 @@ export default function Share() {
   const { photo, gele, photoAdjust, setPhotoAdjust, topFive, setTopFive } = useApp();
   const navigate = useNavigate();
   const [photoImg] = useImage(photo?.dataUrl);
-  const [geleImg] = useImage(geleSrc);
+  const [geleImg, geleStatus] = useImage(geleSrc);
   const [frameImg] = useImage(FRAME_SRC);
   const [sheetOpen, setSheetOpen] = useState(false);
   const stageRef = useRef(null);
@@ -208,7 +208,7 @@ export default function Share() {
             <Group
               x={FRAME_WINDOW.x}
               y={FRAME_WINDOW.y}
-              clipFunc={(ctx) => roundedRectPath(ctx, FRAME_WINDOW.width, FRAME_WINDOW.height, 6)}
+              clipFunc={(ctx) => roundedRectPath(ctx, FRAME_WINDOW.width, FRAME_WINDOW.height, 0)}
             >
               <Group
                 ref={photoGroupRef}
@@ -269,7 +269,7 @@ export default function Share() {
                   width={FRAME_DOME_TEXT.width}
                   align="center"
                   wrap="word"
-                  lineHeight={1.35}
+                  lineHeight={1.9}
                   fontSize={12}
                   fontFamily="Nunito, sans-serif"
                   fontStyle="600"
@@ -280,6 +280,12 @@ export default function Share() {
             )}
           </Layer>
         </Stage>
+        {geleStatus === "loading" && (
+          <div className="share-loading-overlay">
+            <span className="share-loading-spinner" aria-hidden="true" />
+            Loading asset...
+          </div>
+        )}
       </div>
 
       <p className="share-hint">Drag to reposition · scroll or pinch to zoom</p>

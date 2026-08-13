@@ -42,7 +42,7 @@
      transform needed here. */
   position: absolute;
   top: -0.70em;
-  right: -0.70em;
+  right: -0.1em;
   width: 1.5em;
   height: auto;
   filter: drop-shadow(0 6px 14px rgba(208, 184, 247, 0.35));
