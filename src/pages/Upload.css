@@ -100,10 +100,33 @@
   background: #F0EBFA;
 }
 
+.upload-dropzone.processing {
+  cursor: default;
+  border-color: #b8b8bc;
+  background: #F6F6F7;
+}
+
 .upload-icon {
   width: 48px;
   height: auto;
   margin: 0 auto 14px;
+}
+
+.upload-spinner {
+  display: block;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  border: 3px solid #E4E4E8;
+  border-top-color: var(--purple-deep);
+  animation: upload-spin 0.7s linear infinite;
+}
+
+@keyframes upload-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .upload-cta {
