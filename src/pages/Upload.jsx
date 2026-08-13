@@ -23,7 +23,7 @@ export default function Upload() {
         const img = new Image();
         img.onload = () => {
           setPhoto({ dataUrl: reader.result, width: img.width, height: img.height });
-          resetComposition(img.width, img.height);
+          resetComposition(img.width, img.height, reader.result);
           navigate("/edit");
         };
         img.src = reader.result;

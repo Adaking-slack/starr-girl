@@ -1,28 +1,37 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Stage, Layer, Image as KonvaImage, Group, Rect, Text } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Group, Text } from "react-konva";
 import useImage from "use-image";
 import { useApp } from "../state/AppContext.jsx";
 import TopFiveSheet from "../components/TopFiveSheet.jsx";
 import { tracklist } from "../data/tracklist.js";
 import useWindowSize from "../hooks/useWindowSize.js";
 import geleSrc from "../assets/gele-placeholder.svg";
-import starSrc from "../assets/Star.svg";
-import dvdSrc from "../assets/DVD.svg";
-import { CARD_TILT_DEG, CARD_RADIUS, tiltedBounds, roundedRectPath } from "../utils/cardGeometry.js";
+import {
+  FRAME_WIDTH,
+  FRAME_HEIGHT,
+  FRAME_WINDOW,
+  FRAME_DOME_TEXT,
+  coverFit,
+  clampPhotoOffset,
+  zoomPhotoAt,
+  roundedRectPath,
+} from "../utils/cardGeometry.js";
 import "./Share.css";
 
-const TOPFIVE_BLOCK_RATIO = 0.6; // block height as a ratio of card width, when present
+const FRAME_SRC = "/Image/frame.svg";
+const MAX_ZOOM_FACTOR = 3; // relative to the cover-fit minimum
 
 export default function Share() {
-  const { photo, gele, star, topFive, setTopFive } = useApp();
+  const { photo, gele, photoAdjust, setPhotoAdjust, topFive, setTopFive } = useApp();
   const navigate = useNavigate();
   const [photoImg] = useImage(photo?.dataUrl);
   const [geleImg] = useImage(geleSrc);
-  const [starImg] = useImage(starSrc);
-  const [dvdImg] = useImage(dvdSrc);
+  const [frameImg] = useImage(FRAME_SRC);
   const [sheetOpen, setSheetOpen] = useState(false);
   const stageRef = useRef(null);
+  const photoGroupRef = useRef(null);
+  const pinchRef = useRef(null); // { dist, scale } snapshot at gesture start
   const { width: vw, height: vh } = useWindowSize();
 
   useEffect(() => {
@@ -36,28 +45,117 @@ export default function Share() {
 
   if (!photo) return null;
 
-  // Tilted photo card — same Konva-rotation approach as the Editor page (see
-  // src/utils/cardGeometry.js): the tilt/shadow/rounding are drawn inside
-  // the canvas itself so the exported share image includes them exactly as
-  // shown on screen, DVD badge included.
-  const { outerW: cardW, outerH: cardH } = tiltedBounds(photo.width, photo.height);
   const hasTopFive = selectedTracks.length === 5;
-  const topFiveHeight = hasTopFive ? cardW * TOPFIVE_BLOCK_RATIO : 0;
 
-  const stageContentWidth = cardW;
-  const stageContentHeight = cardH + topFiveHeight;
+  // The frame (public/Image/frame.svg) is a fixed-proportion asset — border,
+  // dome, and both sparkle stars are baked into one image — so it's never
+  // stretched to match a photo's aspect ratio. Instead the photo is
+  // cover-fit (center-cropped) into the frame's own window by default, and
+  // the user can drag to reposition / scroll or pinch to zoom from there —
+  // it can never zoom out far enough to reveal empty space at the edges.
+  const maxStageWidth = Math.min(vw - 64, 480);
+  const maxStageHeight = Math.min(vh * 0.68, 700);
+  const displayScale = Math.min(maxStageWidth / FRAME_WIDTH, maxStageHeight / FRAME_HEIGHT, 1);
+  const stageWidth = FRAME_WIDTH * displayScale;
+  const stageHeight = FRAME_HEIGHT * displayScale;
 
-  const maxStageWidth = Math.min(vw - 64, 560);
-  const maxStageHeight = Math.min(vh * 0.72, 820);
-  const scale = Math.min(maxStageWidth / stageContentWidth, maxStageHeight / stageContentHeight, 1);
-  const stageWidth = stageContentWidth * scale;
-  const stageHeight = stageContentHeight * scale;
+  const baseFit = coverFit(photo.width, photo.height, FRAME_WINDOW.width, FRAME_WINDOW.height);
+  const adjust = photoAdjust || {
+    x: baseFit.offsetX,
+    y: baseFit.offsetY,
+    scale: baseFit.scale,
+  };
+  const minZoom = baseFit.scale;
+  const maxZoom = baseFit.scale * MAX_ZOOM_FACTOR;
 
-  const dvdSize = cardW * 0.55;
-  const pad = cardW * 0.07;
-  const headerFont = cardW * 0.05;
-  const rowFont = cardW * 0.04;
-  const rowGap = cardW * 0.095;
+  const trackText = selectedTracks.map((t) => t.title).join("     ");
+
+  // Pointer/touch positions come back in the window's own local coordinate
+  // space (same units as adjust.x/y) so they can feed straight into the
+  // pan/zoom helpers.
+  const toWindowLocal = (stageX, stageY) => ({
+    x: stageX - FRAME_WINDOW.x,
+    y: stageY - FRAME_WINDOW.y,
+  });
+
+  const applyZoom = (newScaleRaw, point) => {
+    const newScale = Math.min(maxZoom, Math.max(minZoom, newScaleRaw));
+    const next = zoomPhotoAt(
+      adjust.x,
+      adjust.y,
+      adjust.scale,
+      point,
+      newScale,
+      photo.width,
+      photo.height,
+      FRAME_WINDOW.width,
+      FRAME_WINDOW.height
+    );
+    setPhotoAdjust({ x: next.x, y: next.y, scale: newScale });
+  };
+
+  const handleWheel = (e) => {
+    e.evt.preventDefault();
+    const stage = e.target.getStage();
+    const pointer = stage.getPointerPosition();
+    if (!pointer) return;
+    const point = toWindowLocal(pointer.x, pointer.y);
+    const dir = e.evt.deltaY > 0 ? -1 : 1;
+    applyZoom(adjust.scale * (1 + dir * 0.08), point);
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.evt.touches.length >= 2) {
+      photoGroupRef.current?.stopDrag();
+      pinchRef.current = null;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    const touches = e.evt.touches;
+    if (touches.length !== 2) return;
+    e.evt.preventDefault();
+
+    const stage = e.target.getStage();
+    const rect = stage.container().getBoundingClientRect();
+    const [t0, t1] = touches;
+    const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const midClientX = (t0.clientX + t1.clientX) / 2;
+    const midClientY = (t0.clientY + t1.clientY) / 2;
+    const point = toWindowLocal(
+      (midClientX - rect.left) / displayScale,
+      (midClientY - rect.top) / displayScale
+    );
+
+    if (!pinchRef.current) {
+      pinchRef.current = { dist, scale: adjust.scale };
+      return;
+    }
+    const ratio = dist / pinchRef.current.dist;
+    applyZoom(pinchRef.current.scale * ratio, point);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.evt.touches.length < 2) pinchRef.current = null;
+  };
+
+  const handleDragMove = (e) => {
+    const node = e.target;
+    const clamped = clampPhotoOffset(
+      node.x(),
+      node.y(),
+      adjust.scale,
+      photo.width,
+      photo.height,
+      FRAME_WINDOW.width,
+      FRAME_WINDOW.height
+    );
+    node.position(clamped);
+  };
+
+  const handleDragEnd = (e) => {
+    setPhotoAdjust({ x: e.target.x(), y: e.target.y(), scale: adjust.scale });
+  };
 
   const handleExport = async () => {
     if (!stageRef.current) return;
@@ -93,36 +191,35 @@ export default function Share() {
       </header>
 
       <div className="share-card-wrap">
-        <Stage ref={stageRef} width={stageWidth} height={stageHeight} scaleX={scale} scaleY={scale}>
+        <Stage
+          ref={stageRef}
+          width={stageWidth}
+          height={stageHeight}
+          scaleX={displayScale}
+          scaleY={displayScale}
+          onWheel={handleWheel}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <Layer>
-            <KonvaImage
-              image={dvdImg}
-              x={cardW * 0.86}
-              y={cardH * 0.5}
-              width={dvdSize}
-              height={dvdSize}
-              offsetX={dvdSize / 2}
-              offsetY={dvdSize / 2}
-            />
-
+            {/* Photo + gele, cover-fit cropped into the frame's window.
+                Draggable to pan; wheel/pinch to zoom (see handlers above). */}
             <Group
-              x={cardW / 2}
-              y={cardH / 2}
-              offsetX={photo.width / 2}
-              offsetY={photo.height / 2}
-              rotation={CARD_TILT_DEG}
+              x={FRAME_WINDOW.x}
+              y={FRAME_WINDOW.y}
+              clipFunc={(ctx) => roundedRectPath(ctx, FRAME_WINDOW.width, FRAME_WINDOW.height, 6)}
             >
-              <Rect
-                width={photo.width}
-                height={photo.height}
-                cornerRadius={CARD_RADIUS}
-                fill="#fff"
-                shadowColor="rgba(15,15,18,0.4)"
-                shadowBlur={44}
-                shadowOffsetY={20}
-                shadowOpacity={1}
-              />
-              <Group clipFunc={(ctx) => roundedRectPath(ctx, photo.width, photo.height, CARD_RADIUS)}>
+              <Group
+                ref={photoGroupRef}
+                x={adjust.x}
+                y={adjust.y}
+                scaleX={adjust.scale}
+                scaleY={adjust.scale}
+                draggable
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
+              >
                 <KonvaImage image={photoImg} width={photo.width} height={photo.height} />
                 <KonvaImage
                   image={geleImg}
@@ -136,64 +233,56 @@ export default function Share() {
                   scaleY={gele.scaleY}
                   rotation={gele.rotation}
                 />
-                <KonvaImage
-                  image={starImg}
-                  x={star.x}
-                  y={star.y}
-                  width={star.width}
-                  height={star.height}
-                  offsetX={star.width / 2}
-                  offsetY={star.height / 2}
-                  scaleX={star.scaleX}
-                  scaleY={star.scaleY}
-                  rotation={star.rotation}
-                />
               </Group>
             </Group>
 
+            {/* Border, dome, and both sparkle stars — all baked into one asset.
+                frame.svg's own canvas (360×697) is taller than its visible
+                shapes (which stop around y=498) — crop to just that region
+                so it isn't stretched/squished into the wrong aspect ratio. */}
+            <KonvaImage
+              image={frameImg}
+              width={FRAME_WIDTH}
+              height={FRAME_HEIGHT}
+              crop={{ x: 0, y: 0, width: FRAME_WIDTH, height: FRAME_HEIGHT }}
+              listening={false}
+            />
+
             {hasTopFive && (
-              <Group x={0} y={cardH}>
-                <Rect
-                  width={stageContentWidth}
-                  height={topFiveHeight}
-                  cornerRadius={CARD_RADIUS}
-                  fill="#F6F6F7"
-                />
+              <>
                 <Text
-                  text="MY AYRA STARR"
-                  x={pad}
-                  y={pad}
-                  fontSize={headerFont * 0.46}
-                  fontFamily="Nunito, sans-serif"
-                  fontStyle="700"
-                  fill="#91198F"
-                  letterSpacing={1.5}
-                />
-                <Text
-                  text="TOP 5"
-                  x={pad}
-                  y={pad + headerFont * 0.7}
-                  fontSize={headerFont}
+                  text="My starr 5"
+                  x={FRAME_DOME_TEXT.x}
+                  y={FRAME_DOME_TEXT.headingY}
+                  width={FRAME_DOME_TEXT.width}
+                  align="center"
+                  fontSize={17}
                   fontFamily="Comic Neue, sans-serif"
                   fontStyle="bold"
                   fill="#0F0F12"
+                  listening={false}
                 />
-                {selectedTracks.map((track, i) => (
-                  <Text
-                    key={track.id}
-                    text={`${i + 1}.  ${track.title}`}
-                    x={pad}
-                    y={pad + headerFont * 1.9 + i * rowGap}
-                    fontSize={rowFont}
-                    fontFamily="Nunito, sans-serif"
-                    fill="#0F0F12"
-                  />
-                ))}
-              </Group>
+                <Text
+                  text={trackText}
+                  x={FRAME_DOME_TEXT.x}
+                  y={FRAME_DOME_TEXT.listY}
+                  width={FRAME_DOME_TEXT.width}
+                  align="center"
+                  wrap="word"
+                  lineHeight={1.35}
+                  fontSize={12}
+                  fontFamily="Nunito, sans-serif"
+                  fontStyle="600"
+                  fill="#0F0F12"
+                  listening={false}
+                />
+              </>
             )}
           </Layer>
         </Stage>
       </div>
+
+      <p className="share-hint">Drag to reposition · scroll or pinch to zoom</p>
 
       <div className="share-actions" style={{ maxWidth: Math.max(stageWidth, 360) }}>
         <button className="btn-reset" onClick={() => setSheetOpen(true)}>

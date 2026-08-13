@@ -1,7 +1,7 @@
 /*
  * Light theme matching the reference: white page, dark heading, a plain
- * "step" label, light segmented tabs, a tilted photo card with the DVD
- * badge peeking out behind it, and soft pill buttons.
+ * "step" label, a tilted photo card with the DVD badge peeking out behind
+ * it, and soft pill buttons.
  *
  * The card's rounded corners, shadow, and tilt are drawn inside the Konva
  * stage itself (see Editor.jsx) rather than with CSS on the container —
@@ -47,31 +47,6 @@
   color: #0F0F12;
 }
 
-.editor-layer-tabs {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  min-width: 240px;
-  justify-content: center;
-}
-
-.layer-tab {
-  border: 1px solid transparent;
-  background: transparent;
-  color: #5A5A60;
-  border-radius: 10px;
-  padding: 9px 22px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.layer-tab.active {
-  background: #F4F4F5;
-  border-color: #E4E4E7;
-  color: #0F0F12;
-} 
-
 .editor-card-wrap {
   position: relative;
   display: flex;
@@ -116,11 +91,6 @@
 
   .editor-title {
     font-size: 30px;
-  }
-
-  .layer-tab {
-    padding: 10px 26px;
-    font-size: 15px;
   }
 
   /* Sit naturally under the canvas instead of pinning to the viewport

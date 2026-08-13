@@ -1,8 +1,8 @@
 /*
  * Light theme matching the reference: white page, dark heading, a plain
- * "step" label, a tilted photo card (with DVD badge drawn behind it inside
- * the canvas, so it's included in the exported share image), and the same
- * soft pill buttons as the Editor page.
+ * "step" label, the frame-based card (border/dome/stars baked into
+ * public/Image/frame.svg, drawn inside the canvas so it's included in the
+ * exported share image), and the same soft pill buttons as the Editor page.
  */
 
 .share-page {
@@ -45,6 +45,15 @@
 
 .share-card-wrap {
   line-height: 0;
+  touch-action: none; /* let the canvas handle pan/pinch itself, no browser scroll/zoom fighting it */
+}
+
+.share-hint {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #ABABB0;
+  margin: 0;
+  text-align: center;
 }
 
 .share-actions {
