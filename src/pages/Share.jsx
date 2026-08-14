@@ -12,8 +12,7 @@ import {
   FRAME_HEIGHT,
   FRAME_WINDOW,
   FRAME_DOME_TEXT,
-  DOME_CENTER,
-  DOME_RADIUS,
+  domeClipPath,
   coverFit,
   clampPhotoOffset,
   zoomPhotoAt,
@@ -251,26 +250,21 @@ export default function Share() {
             />
 
             {/* A soft diagonal sheen on the dome — the "glossy vinyl/DVD
-                peeking out of its case" illusion. Clipped to the dome's own
-                circle so the sweep only ever touches the pink fill. */}
-            <Group
-              clipFunc={(ctx) => {
-                ctx.beginPath();
-                ctx.arc(DOME_CENTER.x, DOME_CENTER.y, DOME_RADIUS, 0, Math.PI * 2);
-                ctx.closePath();
-              }}
-              listening={false}
-            >
+                peeking out of its case" illusion. Clipped to the dome's
+                actual pixel-sampled shape (see domeClipPath) — the dome is
+                pointier than a circle/ellipse at the top, so approximating
+                it let the sheen poke past the pink into the purple ring. */}
+            <Group clipFunc={domeClipPath} listening={false}>
               <Rect
-                x={DOME_CENTER.x}
-                y={DOME_CENTER.y}
-                width={DOME_RADIUS * 2.6}
-                height={DOME_RADIUS * 0.8}
-                offsetX={(DOME_RADIUS * 2.6) / 2}
-                offsetY={(DOME_RADIUS * 0.8) / 2}
+                x={181}
+                y={410}
+                width={340}
+                height={100}
+                offsetX={170}
+                offsetY={50}
                 rotation={-35}
                 fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                fillLinearGradientEndPoint={{ x: 0, y: DOME_RADIUS * 0.8 }}
+                fillLinearGradientEndPoint={{ x: 0, y: 100 }}
                 fillLinearGradientColorStops={[
                   0, "rgba(255,255,255,0)",
                   0.5, "rgba(255,255,255,0.22)",
