@@ -48,6 +48,18 @@ export const FRAME_DOME_TEXT = {
   listY: 415,
 };
 
+// The pink dome is a circle mostly hidden behind the card's bottom edge —
+// only its top arc shows, like a disc sliding out of a sleeve. Derived from
+// the inner dome path in frame.svg (roughly x:50.5→312.3, y:349→472.7):
+// diameter ≈ width of that span, so center/radius follow from it. Used to
+// clip the glossy highlight layer to the dome's actual circular shape.
+// Radius is intentionally a bit smaller than the raw path math — the pink
+// area isn't a perfect circle, so the full math radius let the highlight
+// poke past the pink into the dark purple ring around it; this keeps it
+// safely inside the pink.
+export const DOME_CENTER = { x: 181, y: 483 };
+export const DOME_RADIUS = 115;
+
 // Standard "background-size: cover" fit: scales (srcW, srcH) up to
 // completely fill (dstW, dstH), centered, cropping the overflow.
 export function coverFit(srcW, srcH, dstW, dstH) {

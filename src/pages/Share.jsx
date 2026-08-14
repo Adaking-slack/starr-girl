@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Stage, Layer, Image as KonvaImage, Group, Text } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Group, Rect, Text } from "react-konva";
 import useImage from "use-image";
 import { useApp } from "../state/AppContext.jsx";
 import TopFiveSheet from "../components/TopFiveSheet.jsx";
@@ -12,6 +12,8 @@ import {
   FRAME_HEIGHT,
   FRAME_WINDOW,
   FRAME_DOME_TEXT,
+  DOME_CENTER,
+  DOME_RADIUS,
   coverFit,
   clampPhotoOffset,
   zoomPhotoAt,
@@ -247,6 +249,35 @@ export default function Share() {
               crop={{ x: 0, y: 0, width: FRAME_WIDTH, height: FRAME_HEIGHT }}
               listening={false}
             />
+
+            {/* A soft diagonal sheen on the dome — the "glossy vinyl/DVD
+                peeking out of its case" illusion. Clipped to the dome's own
+                circle so the sweep only ever touches the pink fill. */}
+            <Group
+              clipFunc={(ctx) => {
+                ctx.beginPath();
+                ctx.arc(DOME_CENTER.x, DOME_CENTER.y, DOME_RADIUS, 0, Math.PI * 2);
+                ctx.closePath();
+              }}
+              listening={false}
+            >
+              <Rect
+                x={DOME_CENTER.x}
+                y={DOME_CENTER.y}
+                width={DOME_RADIUS * 2.6}
+                height={DOME_RADIUS * 0.8}
+                offsetX={(DOME_RADIUS * 2.6) / 2}
+                offsetY={(DOME_RADIUS * 0.8) / 2}
+                rotation={-35}
+                fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+                fillLinearGradientEndPoint={{ x: 0, y: DOME_RADIUS * 0.8 }}
+                fillLinearGradientColorStops={[
+                  0, "rgba(255,255,255,0)",
+                  0.5, "rgba(255,255,255,0.22)",
+                  1, "rgba(255,255,255,0)",
+                ]}
+              />
+            </Group>
 
             {hasTopFive && (
               <>
